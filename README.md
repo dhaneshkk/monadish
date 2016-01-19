@@ -25,3 +25,20 @@ Balance: $0.00
 Balance: $6.00
 Balance: $42.00
 ```
+
+### `Validation`
+
+```
+$ sbt "run-main ValidationDemo 6 7"
+parseAndMultiply("6", "7") = Success(42)
+```
+
+```
+$ sbt "run-main ValidationDemo six 7"
+parseAndMultiply("six", "7") = Failure([could not parse "six" as an integer])
+```
+
+```
+$ sbt "run-main ValidationDemo six seven"
+parseAndMultiply("six", "seven") = Failure([could not parse "six" as an integer, could not parse "seven" as an integer])
+```
