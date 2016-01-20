@@ -6,32 +6,32 @@ interface Option<A> {
 
   public <B> Option<B> map(Function<A,B> f);
 
-  public A getOrElse(A x);
+  public A getOrElse(A fallback);
 
 }
 
 class Some<A> implements Option<A> {
 
-  private final A x;
+  private final A value;
 
-  public Some(A x) {
-    this.x = x;
+  public Some(A value) {
+    this.value = value;
   }
 
   public <B> Option<B> map(Function<A,B> f) {
-    return new Some<B>(f.apply(x));
+    return new Some<B>(f.apply(value));
   }
 
   public <B> Option<B> flatMap(Function<A,Option<B>> f) {
-    return f.apply(x);
+    return f.apply(value);
   }
 
   public A getOrElse(A y) {
-    return this.x;
+    return this.value;
   }
 
   public String toString() {
-    return "Some(" + x.toString() + ")";
+    return "Some(" + value.toString() + ")";
   }
 
 }
@@ -46,8 +46,8 @@ class None<A> implements Option<A> {
     return new None<B>();
   }
 
-  public A getOrElse(A x) {
-    return x;
+  public A getOrElse(A fallback) {
+    return fallback;
   }
 
   public String toString() {

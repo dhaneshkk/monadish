@@ -126,6 +126,58 @@ nice, clean way to show what `flatMap` looks like.
 
 Let's look at some actually useful monads.
 
+## Call me `Option`
+
+`Option`, also known as `Maybe`, is a collection of either zero or one
+elements.  It has two implementations: `None` for when it's empty, and
+`Some` for when it contains an element.
+
+Here's an implementation without any of them fancy monads:
+
+```java
+interface Option<A> {
+  public A getOrElse(A fallback);
+}
+
+class Some<A> implements Option<A> {
+
+  private final A value;
+
+  public Some(A value) {
+    this.value = value;
+  }
+
+  public A getOrElse(A y) {
+    return this.value;
+  }
+
+  public String toString() {
+    return "Some(" + value.toString() + ")";
+  }
+
+}
+
+class None<A> implements Option<A> {
+
+  public A getOrElse(A fallback) {
+    return fallback;
+  }
+
+  public String toString() {
+    return "None";
+  }
+
+}
+```
+
+Now let's add `flatMap` implementations.  We'll also add `map`, but
+remember that it's not very interesting when we already have `flatMap`,
+because we can implement `map` using `flatMap` and a constructor.
+
+```java
+
+```
+
 ## Deimos
 
 ### Prerequisites
