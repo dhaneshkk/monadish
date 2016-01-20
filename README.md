@@ -17,15 +17,6 @@ $ sbt "run-main OptionDemo 6 several"
 parseAndMultiply("6", "several") = None
 ```
 
-### `Reader`
-
-```
-$ sbt "run-main ReaderDemo"
-Balance: $0.00
-Balance: $6.00
-Balance: $42.00
-```
-
 ### `Validation`
 
 ```
@@ -41,4 +32,13 @@ parseAndMultiply("six", "7") = Failure([could not parse "six" as an integer])
 ```
 $ sbt "run-main ValidationDemo six seven"
 parseAndMultiply("six", "seven") = Failure([could not parse "six" as an integer, could not parse "seven" as an integer])
+```
+
+### `Reader`
+
+```
+$ sbt "run-main ReaderDemo"
+Balance: $0.00
+Balance: $6.00
+Balance: $42.00
 ```
