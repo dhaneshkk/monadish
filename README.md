@@ -15,10 +15,10 @@ Let's start with a simple, if not very useful, data structure called
 ```java
 class Box<A> {
 
-  private final A x;
+  private final A value;
 
-  public Box(A x) {
-    this.x = x;
+  public Box(A value) {
+    this.value = value;
   }
 
 }
@@ -33,14 +33,14 @@ Let's make it a monad.
 ```java
 class Box<A> {
 
-  private final A x;
+  private final A value;
 
-  public Box(A x) {
-    this.x = x;
+  public Box(A value) {
+    this.value = value;
   }
 
   public <B> Box<B> flatMap(Function<A,Box<B>> f) {
-    return f.apply(x);
+    return f.apply(value);
   }
 
 }
@@ -50,7 +50,8 @@ We added `flatMap`.  Yep, that's it.  To be a monad, `Box` needs two
 things:
 
 1. A way to construct a `Box<A>` given an `A`
-1. A way to apply a function of type `(A) -> Box<B>` to get a `Box<B>`
+1. A way to apply a function of type `(A) -> Box<B>` to a `Box<A>` to
+   get a `Box<B>`
 
 Because `Box` is so simple, it's hard to come up with compelling,
 practical examples of when we would need to apply a function of type
@@ -69,18 +70,28 @@ shape to data structures like `Box`.
 ## 50,000 watts of functor
 
 You may have encountered *mappable* data structures in other languages.
-It turns out that every monad is also a functor.
+These are functors.  It turns out that every monad is also a functor.
 
 If you have both:
 
 1. A way to construct a `Box<A>` given an `A`
-1. A way to apply a function of type `(A) -> Box<B>` to get a `Box<B>`
+1. A way to apply a function of type `(A) -> Box<B>` to a `Box<A>` to
+   get a `Box<B>`
 
 You can write a function `map`:
 
 ```java
 public <B> Box<B> map(Function<A,B> f) {
   return flatMap((x) -> new Box<>(f.apply(x)));
+}
+```
+
+This generic implementation will work for any monad.  If we want to, we
+can clean it up (and optimize it) by foregoing `flatMap`:
+
+```java
+public <B> Box<B> map(Function<A,B> f) {
+  return new Box<>(f.apply(value));
 }
 ```
 

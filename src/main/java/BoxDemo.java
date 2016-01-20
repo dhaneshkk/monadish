@@ -2,26 +2,26 @@ import java.util.function.Function;
 
 class Box<A> {
 
-  private final A x;
+  private final A value;
 
-  public Box(A x) {
-    this.x = x;
+  public Box(A value) {
+    this.value = value;
   }
 
   public <B> Box<B> map(Function<A,B> f) {
-    return flatMap((x) -> new Box<>(f.apply(x)));
+    return flatMap((value) -> new Box<>(f.apply(value)));
   }
 
   public <B> Box<B> flatMap(Function<A,Box<B>> f) {
-    return f.apply(x);
+    return f.apply(value);
   }
 
   public A getOrElse(A y) {
-    return this.x;
+    return this.value;
   }
 
   public String toString() {
-    return "Box(" + x.toString() + ")";
+    return "Box(" + value.toString() + ")";
   }
 
 }
