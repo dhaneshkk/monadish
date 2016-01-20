@@ -1,7 +1,11 @@
 This is a very informal introduction to monads using Java 8.
 
-Java 8 is not a great language for an introduction to monads, but it's
+Java is not a great language for an introduction to monads, but it's
 the most widely readable by the audience, so it will do.
+
+Seriously, this is going to be really tedious in Java.  We're doing it
+for the familiarity.  Try not to let it sour you on the underlying
+ideas.
 
 We'll back our way into monad comprehension by starting with the
 implementation, and working in reverse through the laws, and toward the
