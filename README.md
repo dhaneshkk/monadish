@@ -1,4 +1,4 @@
-This is an informal introduction to monads using Java 8.
+This is a very informal introduction to monads using Java 8.
 
 Java 8 is not a great language for an introduction to monads, but it's
 the most widely readable by the audience, so it will do.
