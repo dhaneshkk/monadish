@@ -14,7 +14,7 @@ theory.
 ## What's in the box?
 
 Let's start with a simple, if not very useful, data structure called
-`Box<A>`:
+`Box`:
 
 ```java
 class Box<A> {
@@ -28,7 +28,8 @@ class Box<A> {
 }
 ```
 
-A `Box<A>` just holds a value of type `A`.
+A `Box<A>` just holds a value of type `A`.  It doesn't even make the
+valuable visible to anyone.  How selfish.
 
 ## The shape of a monad
 
@@ -115,6 +116,15 @@ monad laws, but that's about all there is to it.
 
 The rest of your journey will be gaining familiarity with different
 common monads, and developing an intuition for how to put them to work.
+
+## This is dumb
+
+Yeah, I agree.  I wouldn't really use `Box` for anything.  But it's a
+nice, clean way to show what `flatMap` looks like.
+
+## Think outside the `Box`
+
+Let's look at some actually useful monads.
 
 ## Demos
 
