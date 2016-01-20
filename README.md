@@ -126,7 +126,7 @@ nice, clean way to show what `flatMap` looks like.
 
 Let's look at some actually useful monads.
 
-## Demos
+## Deimos
 
 ### Prerequisites
 
