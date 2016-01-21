@@ -274,6 +274,26 @@ parseInt("six").flatMap((x) -> parseInt("7").map((y) -> x * y)) // None
 parseInt("six").flatMap((x) -> parseInt("seven").map((y) -> x * y)) // None
 ```
 
+## `None`!  What it is good for?
+
+In the above examples, we can safely try to parse and multiply some
+numbers, but if any of them fail to parse, all we get back is a `None`,
+so we don't know much about what went wrong.
+
+It would be nice to know whether the first number failed to parse, or
+the second number failed to parse, or both of them failed to parse.  We
+need more information than simply `None`, and we need to collect that
+information as we go.
+
+## More like mehnad
+
+*TODO:*
+
+* Applicative functors
+* `ap`
+* Parallelization
+* Function lifting
+
 ## Deimos
 
 ### Prerequisites
