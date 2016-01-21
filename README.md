@@ -170,12 +170,108 @@ class None<A> implements Option<A> {
 }
 ```
 
-Now let's add `flatMap` implementations.  We'll also add `map`, but
-remember that it's not very interesting when we already have `flatMap`,
-because we can implement `map` using `flatMap` and a constructor.
+Now let's add `flatMap` implementations.
+
+We'll also add `map`, but remember that it's not very interesting when
+we already have `flatMap`, because we can implement `map` using
+`flatMap` and a constructor.
 
 ```java
+interface Option<A> {
 
+  public A getOrElse(A fallback);
+
+  public <B> Option<B> map(Function<A,B> f);
+
+  public <B> Option<B> flatMap(Function<A,Option<B>> f);
+
+}
+
+class Some<A> implements Option<A> {
+
+  private final A value;
+
+  public Some(A value) {
+    this.value = value;
+  }
+
+  public A getOrElse(A y) {
+    return this.value;
+  }
+
+  public <B> Option<B> map(Function<A,B> f) {
+    return new Some<B>(f.apply(value));
+  }
+
+  public <B> Option<B> flatMap(Function<A,Option<B>> f) {
+    return f.apply(value);
+  }
+
+  public String toString() {
+    return "Some(" + value.toString() + ")";
+  }
+
+}
+
+class None<A> implements Option<A> {
+
+  public A getOrElse(A fallback) {
+    return fallback;
+  }
+
+  public <B> Option<B> map(Function<A,B> f) {
+    return new None<B>();
+  }
+
+  public <B> Option<B> flatMap(Function<A,Option<B>> f) {
+    return new None<B>();
+  }
+
+  public String toString() {
+    return "None";
+  }
+
+}
+```
+
+## `s/Exception/Option/`
+
+Let's parse some integers, and try to do stuff with them.
+
+```java
+public static Option<Integer> parseInt(String value) {
+  try {
+    return new Some<>(Integer.parseInt(value));
+  } catch (Exception e) {
+    return new None<>();
+  }
+}
+```
+
+```java
+parseInt("6"); // Some(6)
+
+parseInt("six"); // None
+```
+
+## `Option::map`
+
+```java
+parseInt("6").map((x) -> x * 7); // Some(42)
+
+parseInt("six").map((x) -> x * 7); // None
+```
+
+## `Option::flatMap`
+
+```java
+parseInt("6").flatMap((x) -> parseInt("7").map((y) -> x * y)); // Some(42)
+
+parseInt("6").flatMap((x) -> parseInt("seven").map((y) -> x * y)); // None
+
+parseInt("six").flatMap((x) -> parseInt("7").map((y) -> x * y)) // None
+
+parseInt("six").flatMap((x) -> parseInt("seven").map((y) -> x * y)) // None
 ```
 
 ## Deimos
@@ -195,18 +291,15 @@ box(6) flatMap multiplyAndBox(7) = Box(42)
 ### `Option`
 
 ```
-$ ./sbt "run-main OptionDemo 6 7"
-parseAndMultiply("6", "7") = Some(42)
-```
-
-```
-$ ./sbt "run-main OptionDemo six 7"
-parseAndMultiply("six", "7") = None
-```
-
-```
-$ ./sbt "run-main OptionDemo 6 several"
-parseAndMultiply("6", "several") = None
+$ ./sbt "run-main OptionDemo"
+parseInt("6") = Some(6)
+parseInt("6").map((x) -> x * 7) = Some(42)
+parseInt("6").flatMap((x) -> parseInt("7").map((y) -> x * y)) = Some(42)
+parseInt("six") = None
+parseInt("six").map((x) -> x * 7) = None
+parseInt("6").flatMap((x) -> parseInt("seven").map((y) -> x * y)) = None
+parseInt("six").flatMap((x) -> parseInt("7").map((y) -> x * y)) = None
+parseInt("six").flatMap((x) -> parseInt("seven").map((y) -> x * y)) = None
 ```
 
 ### `Validation`
@@ -223,7 +316,8 @@ parseAndMultiply("six", "7") = Failure([could not parse "six" as an integer])
 
 ```
 $ ./sbt "run-main ValidationDemo six seven"
-parseAndMultiply("six", "seven") = Failure([could not parse "six" as an integer, could not parse "seven" as an integer])
+parseAndMultiply("six", "seven") = Failure([could not parse "six" as an integer,
+                                            could not parse "seven" as an integer])
 ```
 
 ### `Reader`

@@ -2,11 +2,11 @@ import java.util.function.Function;
 
 interface Option<A> {
 
+  public A getOrElse(A fallback);
+
   public <B> Option<B> flatMap(Function<A,Option<B>> f);
 
   public <B> Option<B> map(Function<A,B> f);
-
-  public A getOrElse(A fallback);
 
 }
 
@@ -18,16 +18,16 @@ class Some<A> implements Option<A> {
     this.value = value;
   }
 
+  public A getOrElse(A y) {
+    return this.value;
+  }
+
   public <B> Option<B> map(Function<A,B> f) {
     return new Some<B>(f.apply(value));
   }
 
   public <B> Option<B> flatMap(Function<A,Option<B>> f) {
     return f.apply(value);
-  }
-
-  public A getOrElse(A y) {
-    return this.value;
   }
 
   public String toString() {
@@ -38,16 +38,16 @@ class Some<A> implements Option<A> {
 
 class None<A> implements Option<A> {
 
+  public A getOrElse(A fallback) {
+    return fallback;
+  }
+
   public <B> Option<B> map(Function<A,B> f) {
     return new None<B>();
   }
 
   public <B> Option<B> flatMap(Function<A,Option<B>> f) {
     return new None<B>();
-  }
-
-  public A getOrElse(A fallback) {
-    return fallback;
   }
 
   public String toString() {
@@ -74,16 +74,41 @@ public class OptionDemo {
   }
 
   public static void main(String[] args) {
-    if (args.length == 2) {
-      String value1 = args[0];
-      String value2 = args[1];
-      Option<Integer> product = parseAndMultiply(value1, value2);
-      System.out.println(
-        String.format("parseAndMultiply(\"%s\", \"%s\") = %s",
-                      value1, value2, product));
-    } else {
-      System.out.println("error: two arguments required");
-    }
+
+    System.out.println(
+      "parseInt(\"6\") = " +
+      parseInt("6")
+    );
+    System.out.println(
+      "parseInt(\"6\").map((x) -> x * 7) = " +
+      parseInt("6").map((x) -> x * 7)
+    );
+    System.out.println(
+      "parseInt(\"6\").flatMap((x) -> parseInt(\"7\").map((y) -> x * y)) = " +
+      parseInt("6").flatMap((x) -> parseInt("7").map((y) -> x * y))
+    );
+
+    System.out.println(
+      "parseInt(\"six\") = " +
+      parseInt("six")
+    );
+    System.out.println(
+      "parseInt(\"six\").map((x) -> x * 7) = " +
+      parseInt("six").map((x) -> x * 7)
+    );
+    System.out.println(
+      "parseInt(\"6\").flatMap((x) -> parseInt(\"seven\").map((y) -> x * y)) = " +
+      parseInt("6").flatMap((x) -> parseInt("seven").map((y) -> x * y))
+    );
+    System.out.println(
+      "parseInt(\"six\").flatMap((x) -> parseInt(\"7\").map((y) -> x * y)) = " +
+      parseInt("six").flatMap((x) -> parseInt("7").map((y) -> x * y))
+    );
+    System.out.println(
+      "parseInt(\"six\").flatMap((x) -> parseInt(\"seven\").map((y) -> x * y)) = " +
+      parseInt("six").flatMap((x) -> parseInt("seven").map((y) -> x * y))
+    );
+
   }
 
 }
