@@ -546,7 +546,8 @@ parseInt("six").ap(parseInt("seven").map((x) -> (y) -> x * y));
 ## If you're not squinting yet
 
 Let's look at the monadic approach to dependency injection.  Browse over
-to [src/main/java/ReaderDemo.java] and let's walk through it.
+to [src/main/java/ReaderDemo.java](src/main/java/ReaderDemo.java) and
+let's walk through it.
 
 ## Deimos
 
