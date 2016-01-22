@@ -543,6 +543,11 @@ parseInt("six").ap(parseInt("seven").map((x) -> (y) -> x * y));
 // Failure([could not parse "six" as an integer, could not parse "seven" as an integer])
 ```
 
+## If you're not squinting yet
+
+Let's look at the monadic approach to dependency injection.  Browse over
+to [src/main/java/ReaderDemo.java] and let's walk through it.
+
 ## Deimos
 
 Make sure you have Java 8 installed, then fire up sbt:
