@@ -23,7 +23,7 @@ A generic data structure `Foo<A>` is a monad when:
     }
     ```
 
-* Any function of type `(X) -&gt; Foo<Y>` an be applied to a `Foo<X>` to
+* Any function of type `(X) -> Foo<Y>` an be applied to a `Foo<X>` to
   get a `Foo<Y>`
 
     ```java
