@@ -814,7 +814,14 @@ readerDemo.run(db);
 
 ## Deimos
 
-Make sure you have Java 8 installed, then fire up sbt:
+Make sure you have Java 8 installed:
+
+```
+$ java -version
+openjdk version "1.8.0_60"
+```
+
+Then fire up sbt and run the demos:
 
 ```
 $ ./sbt "run-main BoxDemo"
