@@ -485,23 +485,15 @@ parseInt("six").ap(parseInt("seven").map((x) -> (y) -> x * y));
 // Failure([could not parse "six" as an integer, could not parse "seven" as an integer])
 ```
 
-## Going going back to parsing parsing
-
 ## Deimos
 
-### Prerequisites
-
-* Java 8
-
-### `Box`
+Make sure you have Java 8 installed, then fire up sbt:
 
 ```
 $ ./sbt "run-main BoxDemo"
 box(6) map multiply(7) = Box(42)
 box(6) flatMap multiplyAndBox(7) = Box(42)
 ```
-
-### `Option`
 
 ```
 $ ./sbt "run-main OptionDemo"
@@ -515,25 +507,21 @@ parseInt("six").flatMap((x) -> parseInt("7").map((y) -> x * y)) = None
 parseInt("six").flatMap((x) -> parseInt("seven").map((y) -> x * y)) = None
 ```
 
-### `Validation`
-
 ```
 $ ./sbt "run-main ValidationDemo 6 7"
-parseAndMultiply("6", "7") = Success(42)
-```
+parseInt("6") = Success(6)
+parseInt("6").map((x) -> x * 7) = Success(42)
+parseInt("6").ap(parseInt("7").map((x) -> (y) -> x * y)) = Success(42)
+parseInt("six") = Failure([could not parse "six" as an integer])
+parseInt("six").map((x) -> x * 7) = Failure([could not parse "six" as an integer])
+parseInt("6").ap(parseInt("seven").map((x) -> (y) -> x * y)) =
+  Failure([could not parse "seven" as an integer])
+parseInt("six").ap(parseInt("7").map((x) -> (y) -> x * y)) =
+  Failure([could not parse "six" as an integer])
+parseInt("six").ap(parseInt("seven").map((x) -> (y) -> x * y)) =
+   Failure([could not parse "six" as an integer, could not parse "seven" as an integer])
 
 ```
-$ ./sbt "run-main ValidationDemo six 7"
-parseAndMultiply("six", "7") = Failure([could not parse "six" as an integer])
-```
-
-```
-$ ./sbt "run-main ValidationDemo six seven"
-parseAndMultiply("six", "seven") = Failure([could not parse "six" as an integer,
-                                            could not parse "seven" as an integer])
-```
-
-### `Reader`
 
 ```
 $ ./sbt "run-main ReaderDemo"
