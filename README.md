@@ -11,6 +11,28 @@ We'll back our way into monad comprehension by starting with the
 implementation, and working in reverse through the laws, and toward the
 theory.
 
+## TL;DR
+
+A generic data structure `Foo<A>` is a monad when:
+
+* A `Foo<X>` can be instantiated given any value of type `X`
+
+    ```java
+    class Foo<A> {
+      public Foo(A a) { ... }
+    }
+    ```
+
+* Any function of type `(X) -&gt; Foo<Y>` an be applied to a `Foo<X>` to
+  get a `Foo<Y>`
+
+    ```java
+    class Foo<A> {
+      public Foo(A a) { ... }
+      public <B> Foo<B> flatMap(Function<A,Foo<B>> f) { ... }
+    }
+    ```
+
 ## What's in the box?
 
 Let's start with a simple, if not very useful, data structure called
