@@ -379,7 +379,8 @@ interface Validation<A> {
 ```
 
 A `Validation<A>` might contain a value `A`, or it might contain a list
-of errors.
+of errors.  In practice, this would be a list of instances of an `Error`
+class that we define.  For simplicity we'll just use `String`s.
 
 ```java
 class Success<A> implements Validation<A> {
@@ -545,9 +546,211 @@ parseInt("six").ap(parseInt("seven").map((x) -> (y) -> x * y));
 
 ## If you're not squinting yet
 
-Let's look at the monadic approach to dependency injection.  Browse over
-to [src/main/java/ReaderDemo.java](src/main/java/ReaderDemo.java) and
-let's walk through it.
+Let's look at the monadic approach to dependency injection.
+
+## Reader
+
+```java
+class Reader<A,B> {
+
+  private final Function<A,B> f;
+
+  public Reader(Function<A,B> f) {
+    this.f = f;
+  }
+
+  public B run(A x) {
+    return f.apply(x);
+  }
+}
+```
+
+`Reader` is a wrapper around a function `f`.  Think of it as an
+abstraction of a function.
+
+```java
+class Reader<A,B> {
+
+  // ...
+
+  public <C> Reader<A,C> map(Function<B,C> g) {
+    return new Reader<A,C>((x) -> g.apply(f.apply(x)));
+  }
+
+  public <C> Reader<A,C> flatMap(Function<B,Reader<A,C>> g) {
+    return new Reader<A,C>((x) -> g.apply(f.apply(x)).f.apply(x));
+  }
+
+  public <C> Reader<A,C> andThen(Reader<A,C> r) {
+    return flatMap((x) -> r);
+  }
+}
+```
+
+`Reader` lets us compose the wrapped function with other stuff to build
+more complex function abstractions.
+
+## Function abstraction
+
+Consider a familiar-looking `Database` class that lets us get and set
+some data in a database:
+
+```java
+class Database {
+
+  private Map<Long, Double> balances = new HashMap<>(); // imaginary SQL table
+
+  public long beginTransaction() {
+    System.out.println("starting transaction");
+    // imaginary SQL code here
+    return 1L; // imaginary transaction id
+  }
+
+  public void commitTransaction(long transactionId) {
+    System.out.println("committing transaction");
+    // imaginary SQL code here
+  }
+
+  public void rollbackTransaction(long transactionId) {
+    System.out.println("rolling back transaction");
+    // imaginary SQL code here
+  }
+
+  public Double getBalance(long accountId) {
+    // imaginary SQL code here
+    if (balances.containsKey(accountId)) {
+      return balances.get(accountId);
+    } else {
+      return 0D;
+    }
+  }
+
+  public Double setBalance(long accountId, double newBalance) {
+    // imaginary SQL code here
+    Double oldBalance = getBalance(accountId);
+    balances.put(accountId, newBalance);
+    return oldBalance;
+  }
+
+}
+```
+
+Now consider a use case in which we need to get data from the database,
+and then use that information to set some data in the database.  This
+needs to happen in a single logical transaction to ensure consistency.
+
+Normally we would need to do some state gymnastics to get the
+transaction right.  We would make some global lock variable, or a
+`ThreadLocal` with a reference to a transaction.  Nasty.
+
+With `Reader`, we simply build up an abstraction of a single logical
+function that gets data, does something, then sets data, all as one
+operation.
+
+```java
+class DatabaseReader<A> extends Reader<Database, A> {
+
+  public DatabaseReader(Function<Database, A> f) {
+    super(f);
+  }
+
+  @Override
+  public A run(Database db) {
+    long transactionId = db.beginTransaction();
+    try {
+      A a = f.apply(db);
+      db.commitTransaction(transactionId);
+      return a;
+    } catch (Exception e) {
+      db.rollbackTransaction(transactionId);
+      throw e;
+    }
+  }
+
+  @Override
+  public <B> Reader<Database,B> map(Function<A,B> g) {
+    return new DatabaseReader<B>((x) -> g.apply(f.apply(x)));
+  }
+
+  @Override
+  public <B> Reader<Database,B> flatMap(Function<A,Reader<Database,B>> g) {
+    return new DatabaseReader<B>((x) -> g.apply(f.apply(x)).f.apply(x));
+  }
+
+  public static DatabaseReader<Double> getBalance(long accountId) {
+    return new DatabaseReader<>((db) -> db.getBalance(accountId));
+  }
+
+  public static DatabaseReader<Double> setBalance(long accountId, double balance) {
+    return new DatabaseReader<>((db) -> db.setBalance(accountId, balance));
+  }
+
+  public static Reader<Database, Double> awardBonus(long accountId, double amount) {
+    return DatabaseReader.getBalance(accountId).
+      flatMap((x) -> DatabaseReader.setBalance(accountId, x + amount));
+  }
+
+}
+```
+
+A `DatabaseReader<A>` is a `Reader<Database, A>` with a customized `run`
+implementation that starts and commits (or rolls back) a transaction.
+
+We can use `DatabaseReader` to build up arbitrarily complex sequences of
+database actions, and when ready, run them all together in a single
+transaction.
+
+## Bonus, not bogus
+
+Let's look at `ReaderDemo`.  We'll start with some utility functions for
+formatting money.
+
+```java
+public static String formatUSD(Double amount) {
+  return "$" + String.format("%1$,.2f", amount);
+}
+
+public static double logBalance(double balance) {
+  System.out.println("balance: " + formatUSD(balance));
+  return balance;
+}
+```
+
+Now let's put together a database action.
+
+```java
+long accountId = 1;
+
+Reader<Database, Double> readerDemo =
+  DatabaseReader.getBalance(accountId).
+    map(ReaderDemo::logBalance).
+    andThen(DatabaseReader.setBalance(accountId, 100.0)).
+    andThen(DatabaseReader.getBalance(accountId)).
+    map(ReaderDemo::logBalance).
+    andThen(DatabaseReader.awardBonus(accountId, 10.0)).
+    andThen(DatabaseReader.getBalance(accountId)).
+    map(ReaderDemo::logBalance);
+```
+
+`readerDemo` is a `DatabaseReader<Double>`, which is a `Reader<Database,
+Double>`.  This means it's a big abstraction of a bunch of functions
+that need a `Database` to run, and when that happens, it finally returns
+a `Double`.
+
+So it's an abstraction.  How do we make it concrete?  How do we make all
+of these `Database`-dependent functions run, and run within a
+transaction?  We use `DatabaseReader::run`:
+
+```java
+Database db = new Database();
+
+readerDemo.run(db);
+// starting transaction
+// balance: $0.00
+// balance: $100.00
+// balance: $110.00
+// committing transaction
+```
 
 ## Deimos
 
@@ -589,7 +792,9 @@ parseInt("six").ap(parseInt("seven").map((x) -> (y) -> x * y)) =
 
 ```
 $ ./sbt "run-main ReaderDemo"
-Balance: $0.00
-Balance: $6.00
-Balance: $42.00
+starting transaction
+balance: $0.00
+balance: $100.00
+balance: $110.00
+committing transaction
 ```
