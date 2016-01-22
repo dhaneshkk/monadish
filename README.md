@@ -287,10 +287,30 @@ information as we go.
 
 ## More like mehnad
 
-*TODO:*
+It turns out we don't need `flatMap` to do this.  That is to say: we
+don't need a monad.  We need an applicative functor.
 
-* Applicative functors
-* `ap`
+## Like unto `map`
+
+Functors give us `map`:
+
+```java
+public <B> Foo<B> map(Function<A,B> f);
+```
+
+Applicatives build on functors with a new function, `ap`:
+
+```java
+public <B> Foo<B> ap(Foo<Function<A,B>> f);
+```
+
+While a functor lets us apply a raw function to the value encapsulated
+by the data structure, an applicative lets us apply a function that is
+itself encapsulated by the data structure.
+
+## *TODO:*
+
+* Validation
 * Parallelization
 * Function lifting
 
