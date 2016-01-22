@@ -600,22 +600,6 @@ class Database {
 
   private Map<Long, Double> balances = new HashMap<>(); // imaginary SQL table
 
-  public long beginTransaction() {
-    System.out.println("starting transaction");
-    // imaginary SQL code here
-    return 1L; // imaginary transaction id
-  }
-
-  public void commitTransaction(long transactionId) {
-    System.out.println("committing transaction");
-    // imaginary SQL code here
-  }
-
-  public void rollbackTransaction(long transactionId) {
-    System.out.println("rolling back transaction");
-    // imaginary SQL code here
-  }
-
   public Double getBalance(long accountId) {
     // imaginary SQL code here
     if (balances.containsKey(accountId)) {
@@ -630,6 +614,32 @@ class Database {
     Double oldBalance = getBalance(accountId);
     balances.put(accountId, newBalance);
     return oldBalance;
+  }
+
+}
+```
+
+Let's also add some transaction methods that we'll use later:
+
+```java
+class Database {
+
+  // ...
+
+  public long beginTransaction() {
+    System.out.println("starting transaction");
+    // imaginary SQL code here
+    return 1L; // imaginary transaction id
+  }
+
+  public void commitTransaction(long transactionId) {
+    System.out.println("committing transaction");
+    // imaginary SQL code here
+  }
+
+  public void rollbackTransaction(long transactionId) {
+    System.out.println("rolling back transaction");
+    // imaginary SQL code here
   }
 
 }
@@ -654,6 +664,16 @@ class DatabaseReader<A> extends Reader<Database, A> {
     super(f);
   }
 
+}
+```
+
+A `DatabaseReader<A>` is a `Reader<Database, A>`, but that's not all:
+
+```java
+class DatabaseReader<A> extends Reader<Database, A> {
+
+  // ...
+
   @Override
   public A run(Database db) {
     long transactionId = db.beginTransaction();
@@ -667,6 +687,23 @@ class DatabaseReader<A> extends Reader<Database, A> {
     }
   }
 
+}
+```
+
+When we run a database action, we want it to happen within the context
+of a transaction, so `DatabaseReader` has a customized `run`
+implementation that starts a transaction, runs the underlying
+database-dependent function, then commits (or rolls back) a transaction.
+
+When composing `DatabaseReader`s together, we don't want to lose our
+custom `run` implementation, so we have a few more things to override --
+any function in `Reader` that constructs a new `Reader`:
+
+```java
+class DatabaseReader<A> extends Reader<Database, A> {
+
+  // ...
+
   @Override
   public <B> Reader<Database,B> map(Function<A,B> g) {
     return new DatabaseReader<B>((x) -> g.apply(f.apply(x)));
@@ -676,6 +713,20 @@ class DatabaseReader<A> extends Reader<Database, A> {
   public <B> Reader<Database,B> flatMap(Function<A,Reader<Database,B>> g) {
     return new DatabaseReader<B>((x) -> g.apply(f.apply(x)).f.apply(x));
   }
+
+}
+```
+
+Now we can use `DatabaseReader` to build up arbitrarily complex
+sequences of database actions, and when ready, run them all together in
+a single transaction.
+
+Let's make a few useful database actions that we can use later.
+
+```java
+class DatabaseReader<A> extends Reader<Database, A> {
+
+  // ...
 
   public static DatabaseReader<Double> getBalance(long accountId) {
     return new DatabaseReader<>((db) -> db.getBalance(accountId));
@@ -692,13 +743,6 @@ class DatabaseReader<A> extends Reader<Database, A> {
 
 }
 ```
-
-A `DatabaseReader<A>` is a `Reader<Database, A>` with a customized `run`
-implementation that starts and commits (or rolls back) a transaction.
-
-We can use `DatabaseReader` to build up arbitrarily complex sequences of
-database actions, and when ready, run them all together in a single
-transaction.
 
 ## Bonus, not bogus
 
