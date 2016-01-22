@@ -34,10 +34,10 @@ A generic data structure `Foo<A>` is&#42; a monad when:
     ```
 
 &#42; Since Java is an OO language, we build the constructor and
-`flatMap` method right into the `Foo` class, and say that `Foo` *is a*
+`flatMap` method right into the `Foo` class, and say that `Foo` *is* a
 monad.  In languages with higher-kinded types and ad-hoc polymorphism
 (e.g. Haskell, Scala), we can pull these out into singleton modules that
-act on `Foo` instances, and say that `Foo` *has a* monad.
+act on `Foo` instances, and say that `Foo` *has* a monad.
 
 ## What's in the box?
 
