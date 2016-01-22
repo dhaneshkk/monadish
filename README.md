@@ -88,7 +88,8 @@ of this.
 Here's an example anyway:
 
 ```java
-new Box<Integer>(6).map((x) -> new Box<>(x * 7))); // Box(42)
+new Box<Integer>(6).map((x) -> new Box<>(x * 7)));
+// Box(42)
 ```
 
 For now, assume that it's common to need to apply functions of this
@@ -128,7 +129,8 @@ Now you can take a `Box<A>`, apply a function `(A) -> B`, and get a
 Here's an example:
 
 ```java
-new Box<Integer>(6).map((x) -> x * 7); // Box(42)
+new Box<Integer>(6).map((x) -> x * 7);
+// Box(42)
 ```
 
 ## What else?
@@ -201,7 +203,7 @@ we already have `flatMap`, because we can implement `map` using
 ```java
 interface Option<A> {
 
-  public A getOrElse(A fallback);
+  // ...
 
   public <B> Option<B> map(Function<A,B> f);
 
@@ -211,15 +213,7 @@ interface Option<A> {
 
 class Some<A> implements Option<A> {
 
-  private final A value;
-
-  public Some(A value) {
-    this.value = value;
-  }
-
-  public A getOrElse(A y) {
-    return this.value;
-  }
+  // ...
 
   public <B> Option<B> map(Function<A,B> f) {
     return new Some<B>(f.apply(value));
@@ -229,17 +223,11 @@ class Some<A> implements Option<A> {
     return f.apply(value);
   }
 
-  public String toString() {
-    return "Some(" + value.toString() + ")";
-  }
-
 }
 
 class None<A> implements Option<A> {
 
-  public A getOrElse(A fallback) {
-    return fallback;
-  }
+  // ...
 
   public <B> Option<B> map(Function<A,B> f) {
     return new None<B>();
@@ -247,10 +235,6 @@ class None<A> implements Option<A> {
 
   public <B> Option<B> flatMap(Function<A,Option<B>> f) {
     return new None<B>();
-  }
-
-  public String toString() {
-    return "None";
   }
 
 }
@@ -271,29 +255,37 @@ public static Option<Integer> parseInt(String value) {
 ```
 
 ```java
-parseInt("6"); // Some(6)
+parseInt("6");
+// Some(6)
 
-parseInt("six"); // None
+parseInt("six");
+// None
 ```
 
 ## `Option::map`
 
 ```java
-parseInt("6").map((x) -> x * 7); // Some(42)
+parseInt("6").map((x) -> x * 7);
+// Some(42)
 
-parseInt("six").map((x) -> x * 7); // None
+parseInt("six").map((x) -> x * 7);
+// None
 ```
 
 ## `Option::flatMap`
 
 ```java
-parseInt("6").flatMap((x) -> parseInt("7").map((y) -> x * y)); // Some(42)
+parseInt("6").flatMap((x) -> parseInt("7").map((y) -> x * y));
+// Some(42)
 
-parseInt("6").flatMap((x) -> parseInt("seven").map((y) -> x * y)); // None
+parseInt("6").flatMap((x) -> parseInt("seven").map((y) -> x * y));
+// None
 
-parseInt("six").flatMap((x) -> parseInt("7").map((y) -> x * y)) // None
+parseInt("six").flatMap((x) -> parseInt("7").map((y) -> x * y))
+// None
 
-parseInt("six").flatMap((x) -> parseInt("seven").map((y) -> x * y)) // None
+parseInt("six").flatMap((x) -> parseInt("seven").map((y) -> x * y))
+// None
 ```
 
 ## `None`!  What it is good for?
@@ -336,11 +328,164 @@ While a functor lets us apply a raw function to the value encapsulated
 by an instance of `Foo`, an applicative lets us apply a function that is
 itself encapsulated by an instance of `Foo`.
 
-## *TODO:*
+## `Validation`
 
-* Validation
-* Parallelization
-* Function lifting
+`Validation`, like `Option`, has two implementations.  One contains a
+value in the case of some successful operation, and the other contains a
+list of errors in the case of zero or more failures.
+
+Let's start without `map` and `ap`.
+
+```java
+interface Validation<A> {
+
+  public Option<A> getValue();
+
+  public Option<List<String>> getErrors();
+
+}
+
+class Success<A> implements Validation<A> {
+
+  private final A value;
+
+  public Success(A value) {
+    this.value = value;
+  }
+
+  public Option<A> getValue() {
+    return new Some<>(value);
+  }
+
+  public Option<List<String>> getErrors() {
+    return new None<>();
+  }
+
+  public String toString() {
+    return "Success(" + value.toString() + ")";
+  }
+
+}
+
+class Failure<A> implements Validation<A> {
+
+  private final List<String> errors;
+
+  public Failure(String error) {
+    this.errors = Arrays.asList(error);
+  }
+
+  public Failure(List<String> errors) {
+    this.errors = errors;
+  }
+
+  public Option<A> getValue() {
+    return new None<>();
+  }
+
+  public Option<List<String>> getErrors() {
+    return new Some<>(errors);
+  }
+
+  public String toString() {
+    return String.format("Failure(%s)", errors);
+  }
+
+}
+```
+
+Now let's add `map` and `ap`.
+
+```java
+interface Validation<A> {
+
+  // ...
+
+  public <B> Validation<B> map(Function<A,B> f);
+
+  public <B> Validation<B> ap(Validation<Function<A,B>> f);
+
+}
+
+class Success<A> implements Validation<A> {
+
+  // ...
+
+  public <B> Validation<B> map(Function<A,B> f) {
+    return new Success<B>(f.apply(value));
+  }
+
+  public <B> Validation<B> ap(Validation<Function<A,B>> f) {
+    Option<B> ob = f.getValue().map((g) -> g.apply(value));
+    Option<Validation<B>> ovb = ob.map((b) -> new Success<>(b));
+    return ovb.getOrElse(new Failure<B>(f.getErrors().getOrElse(new ArrayList<String>())));
+  }
+
+}
+
+class Failure<A> implements Validation<A> {
+
+  // ...
+
+  public <B> Validation<B> map(Function<A,B> f) {
+    return new Failure<B>(errors);
+  }
+
+  public <B> Validation<B> ap(Validation<Function<A,B>> f) {
+    List<String> errors2 = new ArrayList<String>();
+    errors2.addAll(errors);
+    errors2.addAll(f.getErrors().getOrElse(new ArrayList<String>()));
+    return new Failure<B>(errors2);
+  }
+
+}
+```
+
+## `s/Exception/List<String>/`
+
+```java
+public static Validation<Integer> parseInt(String value) {
+  try {
+    return new Success<>(Integer.parseInt(value));
+  } catch (Exception e) {
+    return new Failure<>(String.format("could not parse \"%s\" as an integer", value));
+  }
+}
+```
+
+```java
+parseInt("6") = Success(6)
+
+parseInt("six") = Failure([could not parse "six" as an integer])
+```
+
+## `Validation::map`
+
+```java
+parseInt("6").map((x) -> x * 7);
+// Success(42)
+
+parseInt("six").map((x) -> x * 7);
+// Failure([could not parse "six" as an integer])
+```
+
+## `Validation::ap`
+
+```java
+parseInt("6").ap(parseInt("7").map((x) -> (y) -> x * y));
+// Success(42)
+
+parseInt("6").ap(parseInt("seven").map((x) -> (y) -> x * y));
+// Failure([could not parse "seven" as an integer])
+
+parseInt("six").ap(parseInt("7").map((x) -> (y) -> x * y));
+// Failure([could not parse "six" as an integer])
+
+parseInt("six").ap(parseInt("seven").map((x) -> (y) -> x * y));
+// Failure([could not parse "six" as an integer, could not parse "seven" as an integer])
+```
+
+## Going going back to parsing parsing
 
 ## Deimos
 

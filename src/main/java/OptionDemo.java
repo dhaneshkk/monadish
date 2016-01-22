@@ -66,13 +66,6 @@ public class OptionDemo {
     }
   }
 
-  public static Option<Integer> parseAndMultiply(String value1, String value2) {
-    return parseInt(value1).
-             flatMap((x) ->
-               parseInt(value2).
-                 map((y) -> x * y));
-  }
-
   public static void main(String[] args) {
 
     System.out.println(

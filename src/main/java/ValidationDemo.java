@@ -94,23 +94,42 @@ public class ValidationDemo {
     }
   }
 
-  public static Validation<Integer> parseAndMultiply(String value1, String value2) {
-    return parseInt(value1).ap(
-           parseInt(value2).map(
-           (x) -> (y) -> x * y));
-  }
-
   public static void main(String[] args) {
-    if (args.length == 2) {
-      String value1 = args[0];
-      String value2 = args[1];
-      Validation<Integer> product = parseAndMultiply(value1, value2);
-      System.out.println(
-        String.format("parseAndMultiply(\"%s\", \"%s\") = %s",
-                      value1, value2, product));
-    } else {
-      System.out.println("error: two arguments required");
-    }
+
+    System.out.println(
+      "parseInt(\"6\") = " +
+      parseInt("6")
+    );
+    System.out.println(
+      "parseInt(\"6\").map((x) -> x * 7) = " +
+      parseInt("6").map((x) -> x * 7)
+    );
+    System.out.println(
+      "parseInt(\"6\").ap(parseInt(\"7\").map((x) -> (y) -> x * y)) = " +
+      parseInt("6").ap(parseInt("7").map((x) -> (y) -> x * y))
+    );
+
+    System.out.println(
+      "parseInt(\"six\") = " +
+      parseInt("six")
+    );
+    System.out.println(
+      "parseInt(\"six\").map((x) -> x * 7) = " +
+      parseInt("six").map((x) -> x * 7)
+    );
+    System.out.println(
+      "parseInt(\"6\").ap(parseInt(\"seven\").map((x) -> (y) -> x * y)) = " +
+      parseInt("6").ap(parseInt("seven").map((x) -> (y) -> x * y))
+    );
+    System.out.println(
+      "parseInt(\"six\").ap(parseInt(\"7\").map((x) -> (y) -> x * y)) = " +
+      parseInt("six").ap(parseInt("7").map((x) -> (y) -> x * y))
+    );
+    System.out.println(
+      "parseInt(\"six\").ap(parseInt(\"seven\").map((x) -> (y) -> x * y)) = " +
+      parseInt("six").ap(parseInt("seven").map((x) -> (y) -> x * y))
+    );
+
   }
 
 }
