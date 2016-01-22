@@ -295,18 +295,24 @@ don't need a monad.  We need an applicative functor.
 Functors give us `map`:
 
 ```java
-public <B> Foo<B> map(Function<A,B> f);
+class Foo<A> {
+  // ...
+  public <B> Foo<B> map(Function<A,B> f);
+}
 ```
 
 Applicatives build on functors with a new function, `ap`:
 
 ```java
-public <B> Foo<B> ap(Foo<Function<A,B>> f);
+class Foo<A> {
+  // ...
+  public <B> Foo<B> ap(Foo<Function<A,B>> f);
+}
 ```
 
 While a functor lets us apply a raw function to the value encapsulated
-by the data structure, an applicative lets us apply a function that is
-itself encapsulated by the data structure.
+by an instance of `Foo`, an applicative lets us apply a function that is
+itself encapsulated by an instance of `Foo`.
 
 ## *TODO:*
 
