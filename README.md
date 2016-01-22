@@ -171,7 +171,11 @@ Here's an implementation without any of them fancy monads:
 interface Option<A> {
   public A getOrElse(A fallback);
 }
+```
 
+An `Option<A>` might contain an `A`.
+
+```java
 class Some<A> implements Option<A> {
 
   private final A value;
@@ -189,7 +193,11 @@ class Some<A> implements Option<A> {
   }
 
 }
+```
 
+`Some<A>` is an `Option<A>` that contains an `A`.
+
+```java
 class None<A> implements Option<A> {
 
   public A getOrElse(A fallback) {
@@ -202,6 +210,8 @@ class None<A> implements Option<A> {
 
 }
 ```
+
+`None<A>` is an `Option<A>` that does not contain an `A`.
 
 Now let's add `flatMap` implementations.
 
@@ -219,7 +229,12 @@ interface Option<A> {
   public <B> Option<B> flatMap(Function<A,Option<B>> f);
 
 }
+```
 
+An `Option<A>` can be transformed into an `Option<B>` either by applying
+a function `(A) -> B` or by applying a function `(A) -> Option<B>`.
+
+```java
 class Some<A> implements Option<A> {
 
   // ...
@@ -233,7 +248,12 @@ class Some<A> implements Option<A> {
   }
 
 }
+```
 
+`Some<A>` has an `A`, so we can apply `f` to it in `map` and `flatMap` to
+get a new `Some<B>`.
+
+```java
 class None<A> implements Option<A> {
 
   // ...
@@ -248,6 +268,9 @@ class None<A> implements Option<A> {
 
 }
 ```
+
+`None<A>` has no `A` to operate on, so `map` and `flatMap` just return
+`None<B>`s directly.
 
 ## `s/Exception/Option/`
 
@@ -353,7 +376,12 @@ interface Validation<A> {
   public Option<List<String>> getErrors();
 
 }
+```
 
+A `Validation<A>` might contain a value `A`, or it might contain a list
+of errors.
+
+```java
 class Success<A> implements Validation<A> {
 
   private final A value;
@@ -375,7 +403,11 @@ class Success<A> implements Validation<A> {
   }
 
 }
+```
 
+A `Success<A>` contains a value `A`, and no errors.
+
+```java
 class Failure<A> implements Validation<A> {
 
   private final List<String> errors;
@@ -403,6 +435,8 @@ class Failure<A> implements Validation<A> {
 }
 ```
 
+A `Failure<A>` contains a list of errors, and no value `A`.
+
 Now let's add `map` and `ap`.
 
 ```java
@@ -415,7 +449,13 @@ interface Validation<A> {
   public <B> Validation<B> ap(Validation<Function<A,B>> f);
 
 }
+```
 
+A `Validation<A>` can be transformed into a `Validation<B>` either by
+applying a function `(A) -> B` or by applying a function `(A) ->
+Validation<B>`.
+
+```java
 class Success<A> implements Validation<A> {
 
   // ...
@@ -431,7 +471,12 @@ class Success<A> implements Validation<A> {
   }
 
 }
+```
 
+`Success::map` returns a new `Success`, but `Success:flatMap` could
+fail, since `f` is itself a `Validation`.
+
+```java
 class Failure<A> implements Validation<A> {
 
   // ...
@@ -449,6 +494,10 @@ class Failure<A> implements Validation<A> {
 
 }
 ```
+
+Doing anything with a `Failure` returns a new `Failure`, but since it
+includes a list of errors, we can add to that list when we encounter
+additional errors.
 
 ## `s/Exception/List<String>/`
 
