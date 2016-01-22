@@ -17,21 +17,21 @@ A generic data structure `Foo<A>` is&#42; a monad when:
 
 * A `Foo<X>` can be instantiated given any value of type `X`
 
-    ```java
-    class Foo<A> {
-      public Foo(A a) { ... }
-    }
-    ```
+  ```java
+  class Foo<A> {
+    public Foo(A a) { ... }
+  }
+  ```
 
 * Any function of type `(X) -> Foo<Y>` an be applied to a `Foo<X>` to
   get a `Foo<Y>`
 
-    ```java
-    class Foo<A> {
-      public Foo(A a) { ... }
-      public <B> Foo<B> flatMap(Function<A,Foo<B>> f) { ... }
-    }
-    ```
+  ```java
+  class Foo<A> {
+    public Foo(A a) { ... }
+    public <B> Foo<B> flatMap(Function<A,Foo<B>> f) { ... }
+  }
+  ```
 
 ## &#42; *Is* a monad vs. *has* a monad
 
