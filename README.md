@@ -35,12 +35,28 @@ A generic data structure `Foo<A>` is&#42; a monad when:
 
 ## &#42; *Is* a monad vs. *has* a monad
 
-Since Java is an OO language, we build the constructor and `flatMap`
+Since Java is an OO language, we can build the constructor and `flatMap`
 method right into the `Foo` class, and say that `Foo` *is* a monad.
 
-In languages with higher-kinded types and ad-hoc polymorphism (e.g.
-Haskell, Scala), we can pull these out into module functions that act on
-`Foo` instances, and say that `Foo` *has* a monad.
+In languages with ad-hoc polymorphism (e.g.  Haskell, Scala), we tend
+pull these out into module functions that act on `Foo` instances, and
+say that `Foo` *has* a monad.
+
+This is also possible in Java:
+
+```java
+class FooMonad {
+  public static <A> Foo<A> pure<A>(A a) {
+    return new Foo<>(a);
+  }
+  public static <A,B> Foo<B> flatMap<A>(Foo<A> a, Function<A, Foo<B>> f) {
+    // ...
+  }
+}
+```
+
+We'll use the first approach here, because it's a bit more readable for
+folks with an OO background.
 
 ## What's in the box?
 
