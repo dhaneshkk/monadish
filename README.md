@@ -519,7 +519,7 @@ parseInt("6").ap(parseInt("seven").map((x) -> (y) -> x * y)) =
 parseInt("six").ap(parseInt("7").map((x) -> (y) -> x * y)) =
   Failure([could not parse "six" as an integer])
 parseInt("six").ap(parseInt("seven").map((x) -> (y) -> x * y)) =
-   Failure([could not parse "six" as an integer, could not parse "seven" as an integer])
+  Failure([could not parse "six" as an integer, could not parse "seven" as an integer])
 
 ```
 
