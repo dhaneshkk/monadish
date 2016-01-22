@@ -23,7 +23,7 @@ class Some<A> implements Option<A> {
   }
 
   public <B> Option<B> map(Function<A,B> f) {
-    return new Some<B>(f.apply(value));
+    return new Some<>(f.apply(value));
   }
 
   public <B> Option<B> flatMap(Function<A,Option<B>> f) {
@@ -43,11 +43,11 @@ class None<A> implements Option<A> {
   }
 
   public <B> Option<B> map(Function<A,B> f) {
-    return new None<B>();
+    return new None<>();
   }
 
   public <B> Option<B> flatMap(Function<A,Option<B>> f) {
-    return new None<B>();
+    return new None<>();
   }
 
   public String toString() {

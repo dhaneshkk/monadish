@@ -256,7 +256,7 @@ class Some<A> implements Option<A> {
   // ...
 
   public <B> Option<B> map(Function<A,B> f) {
-    return new Some<B>(f.apply(value));
+    return new Some<>(f.apply(value));
   }
 
   public <B> Option<B> flatMap(Function<A,Option<B>> f) {
@@ -275,11 +275,11 @@ class None<A> implements Option<A> {
   // ...
 
   public <B> Option<B> map(Function<A,B> f) {
-    return new None<B>();
+    return new None<>();
   }
 
   public <B> Option<B> flatMap(Function<A,Option<B>> f) {
-    return new None<B>();
+    return new None<>();
   }
 
 }
@@ -484,7 +484,7 @@ class Success<A> implements Validation<A> {
   public <B> Validation<B> ap(Validation<Function<A,B>> f) {
     Option<B> ob = f.getValue().map((g) -> g.apply(value));
     Option<Validation<B>> ovb = ob.map((b) -> new Success<>(b));
-    return ovb.getOrElse(new Failure<B>(f.getErrors().getOrElse(new ArrayList<String>())));
+    return ovb.getOrElse(new Failure<>(f.getErrors().getOrElse(new ArrayList<String>())));
   }
 
 }
@@ -499,14 +499,14 @@ class Failure<A> implements Validation<A> {
   // ...
 
   public <B> Validation<B> map(Function<A,B> f) {
-    return new Failure<B>(errors);
+    return new Failure<>(errors);
   }
 
   public <B> Validation<B> ap(Validation<Function<A,B>> f) {
     List<String> errors2 = new ArrayList<String>();
     errors2.addAll(errors);
     errors2.addAll(f.getErrors().getOrElse(new ArrayList<String>()));
-    return new Failure<B>(errors2);
+    return new Failure<>(errors2);
   }
 
 }
